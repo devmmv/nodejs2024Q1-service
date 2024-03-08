@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateArtistDto } from './dto/create-artist.dto';
 import { v4 as uuidV4 } from 'uuid';
-import { UpdateArtistDto } from './dto/update-artist.dto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ArtistEntity } from './entities/artist.entity';
+import { TrackEntity } from './entities/track.entity';
+import { CreateTrackDto } from './dto/create-track.dto';
+import { UpdateTrackDto } from './dto/update-track.dto';
 
 @Injectable()
-export class ArtistService {
-  private db: ArtistEntity[];
-  dbPath = '../../DB/artistData.json';
+export class TrackService {
+  private db: TrackEntity[];
+  dbPath = '../../DB/trackData.json';
 
   constructor() {
     fs.promises
@@ -29,31 +29,35 @@ export class ArtistService {
     );
   }
 
-  create(dto: CreateArtistDto) {
-    const newArtist: ArtistEntity = {
+  create(dto: CreateTrackDto) {
+    const newTrack = {
       id: uuidV4(),
       name: dto.name,
-      grammy: dto.grammy,
+      artistId: dto.artistId,
+      albumId: dto.albumId,
+      duration: dto.duration,
     };
 
-    this.db.push(newArtist);
+    this.db.push(newTrack);
     this.saveDb();
-    return newArtist;
+    return newTrack;
   }
 
-  update(id: string, dto: UpdateArtistDto) {
+  update(id: string, dto: UpdateTrackDto) {
     const index = this.db.findIndex((e) => e.id === id);
     if (index === -1) {
       throw new NotFoundException("record with this ID doesn't exist");
     }
-    const newArtist = {
+    const newTrack: TrackEntity = {
       ...this.db[index],
       name: dto.name,
-      grammy: dto.grammy,
+      artistId: dto.artistId,
+      albumId: dto.albumId,
+      duration: dto.duration,
     };
-    this.db[index] = newArtist;
+    this.db[index] = newTrack;
     this.saveDb();
-    return newArtist;
+    return newTrack;
   }
 
   findAll() {
@@ -61,20 +65,18 @@ export class ArtistService {
   }
 
   findOne(id: string) {
-    const artist = this.db.find((artist) => artist.id === id);
-    if (!artist) {
-      throw new NotFoundException('artist not found');
+    const track = this.db.find((track) => track.id === id);
+    if (!track) {
+      throw new NotFoundException('track not found');
     }
 
-    return artist;
+    return track;
   }
 
   remove(id: string) {
-    const index = this.db.findIndex((user) => user.id === id);
-    if (index === -1) throw new NotFoundException('artist not found');
+    const index = this.db.findIndex((album) => album.id === id);
+    if (index === -1) throw new NotFoundException('track not found');
     this.db.splice(index, 1);
-
     this.saveDb();
-    return true;
   }
 }
