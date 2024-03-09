@@ -87,4 +87,12 @@ export class TrackService {
       return track;
     });
   }
+  removeAlbum(id: string) {
+    this.db = this.db.map((track) => {
+      if (track.albumId === id) {
+        track.albumId = null;
+      }
+      return track;
+    });
+  }
 }

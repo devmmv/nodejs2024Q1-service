@@ -5,13 +5,14 @@ import * as path from 'path';
 import { AlbumEntity } from './entities/album.entity';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
   private db: AlbumEntity[];
   dbPath = '../../DB/albumData.json';
 
-  constructor() {
+  constructor(private trackServise: TrackService) {
     fs.promises
       .readFile(path.join(__dirname, this.dbPath), 'utf-8')
       .then((data) => {
@@ -75,6 +76,7 @@ export class AlbumService {
     const index = this.db.findIndex((album) => album.id === id);
     if (index === -1) throw new NotFoundException('album not found');
     this.db.splice(index, 1);
+    this.trackServise.removeAlbum(id);
     this.saveDb();
   }
 
