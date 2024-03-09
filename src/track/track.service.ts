@@ -8,7 +8,8 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 
 @Injectable()
 export class TrackService {
-  private db: TrackEntity[];
+  private favorites: { [id: string]: boolean } = {};
+  db: TrackEntity[];
   dbPath = '../../DB/trackData.json';
 
   constructor() {
@@ -27,6 +28,16 @@ export class TrackService {
       path.join(__dirname, this.dbPath),
       JSON.stringify(this.db),
     );
+  }
+
+  addToFavs(id: string) {
+    this.favorites[id] = true;
+  }
+  deleteFromFavs(id: string) {
+    delete this.favorites[id];
+  }
+  isFavs(id: string) {
+    return !!this.favorites[id];
   }
 
   create(dto: CreateTrackDto) {

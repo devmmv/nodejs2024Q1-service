@@ -9,7 +9,8 @@ import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
-  private db: AlbumEntity[];
+  private favorites: { [id: string]: boolean } = {};
+  db: AlbumEntity[];
   dbPath = '../../DB/albumData.json';
 
   constructor(private trackServise: TrackService) {
@@ -28,6 +29,15 @@ export class AlbumService {
       path.join(__dirname, this.dbPath),
       JSON.stringify(this.db),
     );
+  }
+  addToFavs(id: string) {
+    this.favorites[id] = true;
+  }
+  deleteFromFavs(id: string) {
+    delete this.favorites[id];
+  }
+  isFavs(id: string) {
+    return !!this.favorites[id];
   }
 
   create(dto: CreateAlbumDto) {
