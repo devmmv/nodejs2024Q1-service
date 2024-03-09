@@ -5,13 +5,18 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ArtistEntity } from './entities/artist.entity';
+import { AlbumService } from 'src/album/album.service';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class ArtistService {
   private db: ArtistEntity[];
   dbPath = '../../DB/artistData.json';
 
-  constructor() {
+  constructor(
+    private albumService: AlbumService,
+    private trackService: TrackService,
+  ) {
     fs.promises
       .readFile(path.join(__dirname, this.dbPath), 'utf-8')
       .then((data) => {
@@ -73,6 +78,8 @@ export class ArtistService {
     const index = this.db.findIndex((user) => user.id === id);
     if (index === -1) throw new NotFoundException('artist not found');
     this.db.splice(index, 1);
+    this.albumService.removeArtist(id);
+    this.trackService.removeArtist(id);
 
     this.saveDb();
     return true;

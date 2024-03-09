@@ -77,4 +77,13 @@ export class AlbumService {
     this.db.splice(index, 1);
     this.saveDb();
   }
+
+  removeArtist(id: string) {
+    this.db = this.db.map((album) => {
+      if (album.artistId === id) {
+        album.artistId = null;
+      }
+      return album;
+    });
+  }
 }

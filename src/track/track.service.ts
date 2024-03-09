@@ -79,4 +79,12 @@ export class TrackService {
     this.db.splice(index, 1);
     this.saveDb();
   }
+  removeArtist(id: string) {
+    this.db = this.db.map((track) => {
+      if (track.artistId === id) {
+        track.artistId = null;
+      }
+      return track;
+    });
+  }
 }
