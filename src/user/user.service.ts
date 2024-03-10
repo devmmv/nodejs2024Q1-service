@@ -13,12 +13,12 @@ import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  private db: UserEntity[];
-  dbPath = '../../DB/userData.json';
+  private db: UserEntity[] = [];
+  private fileDb = 'userData.json';
 
   constructor() {
     fs.promises
-      .readFile(path.join(__dirname, this.dbPath), 'utf-8')
+      .readFile(path.join(__dirname, '../../DB', this.fileDb), 'utf-8')
       .then((data) => {
         this.db = JSON.parse(data);
       })
@@ -29,7 +29,7 @@ export class UserService {
 
   private saveDb() {
     fs.promises.writeFile(
-      path.join(__dirname, this.dbPath),
+      path.join(__dirname, '../../DB', this.fileDb),
       JSON.stringify(this.db),
     );
   }
