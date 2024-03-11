@@ -7,62 +7,40 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { v4 as uuidV4 } from 'uuid';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Expose } from 'class-transformer';
-import * as fs from 'fs';
-import * as path from 'path';
 import { UserEntity } from './entities/user.entity';
+import { DbType, db } from 'src/types';
 
 @Injectable()
 export class UserService {
-  private db: UserEntity[] = [];
-  private fileDb = 'userData.json';
-
-  constructor() {
-    fs.promises
-      .readFile(path.join(__dirname, '../../DB', this.fileDb), 'utf-8')
-      .then((data) => {
-        this.db = JSON.parse(data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
-
-  private saveDb() {
-    fs.promises.writeFile(
-      path.join(__dirname, '../../DB', this.fileDb),
-      JSON.stringify(this.db),
-    );
-  }
+  private db: DbType = db;
 
   create(dto: CreateUserDto) {
+    const id = uuidV4();
     const dateNow = Date.now();
     const newUser = {
       ...dto,
-      id: uuidV4(),
+      id,
       version: 1,
       createdAt: dateNow,
       updatedAt: dateNow,
     };
 
-    this.db.push(newUser);
-    this.saveDb();
+    this.db.users[id] = { ...newUser };
     return newUser;
   }
 
   updatePassword(id: string, dto: UpdateUserDto) {
-    const userIndex = this.db.findIndex((user) => user.id === id);
-    if (userIndex === -1) {
+    if (this.db.users[id] === undefined) {
       throw new NotFoundException("record with this ID doesn't exist");
     } else {
-      if (this.db[userIndex].password === dto.oldPassword) {
+      if (this.db.users[id].password === dto.oldPassword) {
         const newUser: UserEntity = {
-          ...this.db[userIndex],
+          ...this.db.users[id],
           updatedAt: Date.now(),
-          version: this.db[userIndex].version + 1,
+          version: this.db.users[id].version + 1,
           password: dto.newPassword,
         };
-        this.db[userIndex] = newUser;
-        this.saveDb();
+        this.db.users[id] = { ...newUser };
         return newUser;
       } else {
         throw new ForbiddenException('old password is wrong');
@@ -71,23 +49,22 @@ export class UserService {
   }
   @Expose()
   findAll() {
-    return this.db;
+    return Object.values(this.db.users);
   }
 
   findOne(id: string) {
-    const user = this.db.find((user) => user.id === id);
-    if (!user) {
+    if (this.db.users[id] === undefined) {
       throw new NotFoundException('user not found');
     }
 
-    return user;
+    return this.db.users[id];
   }
 
   remove(id: string) {
-    const userIndex = this.db.findIndex((user) => user.id === id);
-    if (userIndex === -1) throw new NotFoundException('user not found');
-    this.db.splice(userIndex, 1);
-    this.saveDb();
+    if (this.db.users[id] === undefined)
+      throw new NotFoundException('user not found');
+
+    delete this.db.users[id];
     return true;
   }
 }

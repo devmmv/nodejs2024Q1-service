@@ -2,96 +2,73 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { v4 as uuidV4 } from 'uuid';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import * as fs from 'fs';
-import * as path from 'path';
 import { ArtistEntity } from './entities/artist.entity';
-import { AlbumService } from 'src/album/album.service';
-import { TrackService } from 'src/track/track.service';
+import { DbType, db } from 'src/types';
 
 @Injectable()
 export class ArtistService {
-  private favorites: { [id: string]: boolean } = {};
-  db: ArtistEntity[];
-  dbPath = '../../DB/artistData.json';
-
-  constructor(
-    private albumService: AlbumService,
-    private trackService: TrackService,
-  ) {
-    fs.promises
-      .readFile(path.join(__dirname, this.dbPath), 'utf-8')
-      .then((data) => {
-        this.db = JSON.parse(data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
-
-  private saveDb() {
-    fs.promises.writeFile(
-      path.join(__dirname, this.dbPath),
-      JSON.stringify(this.db),
-    );
-  }
-  addToFavs(id: string) {
-    this.favorites[id] = true;
-  }
-  deleteFromFavs(id: string) {
-    delete this.favorites[id];
-  }
-  isFavs(id: string) {
-    return !!this.favorites[id];
-  }
+  private db: DbType = db;
 
   create(dto: CreateArtistDto) {
+    const id = uuidV4();
     const newArtist: ArtistEntity = {
-      id: uuidV4(),
+      id,
       name: dto.name,
       grammy: dto.grammy,
     };
 
-    this.db.push(newArtist);
-    this.saveDb();
+    this.db.artists[id] = { ...newArtist };
     return newArtist;
   }
 
   update(id: string, dto: UpdateArtistDto) {
-    const index = this.db.findIndex((e) => e.id === id);
-    if (index === -1) {
+    if (this.db.artists[id] === undefined) {
       throw new NotFoundException("record with this ID doesn't exist");
     }
-    const newArtist = {
-      ...this.db[index],
+
+    const newArtist: ArtistEntity = {
+      ...this.db.artists[id],
       name: dto.name,
       grammy: dto.grammy,
     };
-    this.db[index] = newArtist;
-    this.saveDb();
+    this.db.artists[id] = newArtist;
     return newArtist;
   }
 
   findAll() {
-    return this.db;
+    return Object.values(this.db.artists);
   }
 
   findOne(id: string) {
-    const artist = this.db.find((artist) => artist.id === id);
-    if (!artist) {
+    if (this.db.artists[id] === undefined) {
       throw new NotFoundException('artist not found');
     }
-
-    return artist;
+    return this.db.artists[id];
   }
 
   remove(id: string) {
-    const index = this.db.findIndex((user) => user.id === id);
-    if (index === -1) throw new NotFoundException('artist not found');
-    this.db.splice(index, 1);
-    this.albumService.removeArtist(id);
-    this.trackService.removeArtist(id);
+    if (this.db.artists[id] === undefined) {
+      throw new NotFoundException('artist not found');
+    }
+    delete this.db.artists[id];
+    for (let i = 0; i < this.db.favorites.artists.length; i++) {
+      if (this.db.favorites.artists[i].id === id) {
+        this.db.favorites.artists.splice(i, 1);
+        return;
+      }
+    }
 
-    this.saveDb();
-    return true;
+    for (const key in this.db.tracks) {
+      if (this.db.tracks[key]['artistId'] === id) {
+        this.db.tracks[key]['artistId'] = null;
+        return;
+      }
+    }
+    for (const key in this.db.albums) {
+      if (this.db.albums[key]['artistId'] === id) {
+        this.db.albums[key]['artistId'] = null;
+        return;
+      }
+    }
   }
 }
