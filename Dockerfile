@@ -5,6 +5,7 @@ WORKDIR /home/node/app
 COPY package*.json ./
 
 USER node
+RUN npm ci --no-audit --maxsockets 1 --loglevel=error
 
 COPY --chown=node:node . .
 EXPOSE 4000

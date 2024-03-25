@@ -4,7 +4,7 @@ services:
     container_name: db
     restart: unless-stopped
     build: ./db-docker
-    image: mmvprog/db:v8
+    image: mmvprog/db:v20
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -14,14 +14,13 @@ services:
     networks:
       - backend   
     volumes:
-      - "pgdata:/var/lib/postgresql/data"
       - "pglogs:/var/log/posgresgl"
   
   app:
     container_name: app
     restart: always
     build: ./
-    image: mmvprog/app:v9
+    image: mmvprog/app:v20
     ports:
       - ${PORT}:${PORT}
     environment:
@@ -31,6 +30,7 @@ services:
     networks:
       - backend
     volumes:
+      - ./node_modules:/home/node/app/node_modules
       - ./:/home/node/app
 
 volumes:
