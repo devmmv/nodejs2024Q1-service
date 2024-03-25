@@ -19,8 +19,7 @@
     "test:refresh": "cross-env TEST_MODE=auth jest --testPathPattern refresh.e2e.spec.ts --noStackTrace --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "initdb": "echo {\\\"artists\\\":[],\\\"albums\\\":[],\\\"tracks\\\":[]} > DB/favoritesData.json; echo [] > DB/albumData.json; echo [] > DB/artistData.json; echo [] > DB/trackData.json;echo [] > DB/userData.json "
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
@@ -29,7 +28,8 @@
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/mapped-types": "^1.0.1",
     "@nestjs/platform-express": "^8.0.0",
-    "@nestjs/swagger": "^7.3.0",
+    "@nestjs/swagger": "5.2.1",
+    "@prisma/client": "^5.9.1",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
@@ -38,6 +38,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "swagger-ui-express": "^5.0.0",
     "uuid": "^8.3.2",
     "yaml": "^2.4.1"
   },
@@ -60,6 +61,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.2.5",
     "prettier": "^2.3.2",
+    "prisma": "^5.9.1",
     "source-map-support": "^0.5.20",
     "supertest": "^6.2.3",
     "ts-jest": "^27.0.3",
