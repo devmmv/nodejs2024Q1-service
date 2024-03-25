@@ -15,7 +15,7 @@ export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
   @Post(':fav/:id')
-  addToFavs(
+  async addToFavs(
     @Param('fav') fav: 'artist' | 'album' | 'track',
     @Param(
       'id',
@@ -25,12 +25,12 @@ export class FavoritesController {
     )
     id: string,
   ) {
-    const IsNonExistingEntity = this.favoritesService.addToFavs(fav, id);
-    if (IsNonExistingEntity) throw new UnprocessableEntityException();
+    const IsNonExistingEntity = await this.favoritesService.addToFavs(fav, id);
+    if (IsNonExistingEntity === true) throw new UnprocessableEntityException();
   }
   @Delete(':fav/:id')
   @HttpCode(204)
-  deleteFromFavs(
+  async deleteFromFavs(
     @Param('fav') fav: 'artist' | 'album' | 'track',
     @Param(
       'id',
@@ -40,11 +40,11 @@ export class FavoritesController {
     )
     id: string,
   ) {
-    return this.favoritesService.deleteFromFavs(fav, id);
+    return await this.favoritesService.deleteFromFavs(fav, id);
   }
 
   @Get()
-  findAll() {
-    return this.favoritesService.findAll();
+  async findAll() {
+    return await this.favoritesService.findAll();
   }
 }
