@@ -8,6 +8,7 @@ import {
   Put,
   HttpCode,
   ParseUUIDPipe,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,32 +20,43 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  create(@Body() dto: CreateUserDto): UserEntity {
-    return new UserEntity(this.userService.create(dto));
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() dto: CreateUserDto): Promise<UserEntity> {
+    const user: any = await this.userService.create(dto);
+    user.createdAt = Number(user.createdAt);
+    user.updatedAt = Number(user.updatedAt);
+
+    return new UserEntity(user);
   }
 
   @Get()
-  findAll(): UserEntity[] {
-    const users = this.userService.findAll();
+  async findAll(): Promise<UserEntity[]> {
+    const users: unknown[] = await this.userService.findAll();
     return users.map((user) => new UserEntity(user));
   }
 
   @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.userService.findOne(id);
+  async findOne(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<UserEntity> {
+    const user: unknown = await this.userService.findOne(id);
+    return new UserEntity(user);
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateUserDto,
-  ): UserEntity {
-    return new UserEntity(this.userService.updatePassword(id, dto));
+  ): Promise<UserEntity> {
+    const user: any = await this.userService.updatePassword(id, dto);
+    user.createdAt = Number(user.createdAt);
+    user.updatedAt = Number(user.updatedAt);
+    return new UserEntity(user);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.userService.remove(id);
+  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return await this.userService.remove(id);
   }
 }
