@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  db:
+    container_name: db
+    restart: unless-stopped
+    build: ./db-docker
+    image: mmvprog/db:v20
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    networks:
+      - backend   
+    volumes:
+      - "pglogs:/var/log/posgresgl"
+  
+  app:
+    container_name: app
+    restart: always
+    build: ./
+    image: mmvprog/app:v20
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - POSTGRES_HOST=db
+    depends_on:
+      - db
+    networks:
+      - backend
+    volumes:
+      - ./node_modules:/home/node/app/node_modules
+      - ./:/home/node/app
+
+volumes:
+  pgdata: 
+  pglogs: 
+    
+networks:
+  backend:
+    name: backend
+    driver: bridge
